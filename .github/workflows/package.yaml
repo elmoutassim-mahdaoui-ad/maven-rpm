@@ -1,0 +1,33 @@
+name: Python component Package
+
+on:
+  push:
+    branches:
+      - '!main'
+      - '!**'
+
+jobs:
+  docker-builder:
+    name: Docker Build Image
+    uses: adeo/scdp-ops-infra-info/.github/workflows/docker-build.yaml@main
+    secrets: inherit
+    with:
+      docker-image-name: 'insfrastructor-metric-collector'
+      docker-image-repository: 'adeo-docker-asfr-scdp-ops-dev.jfrog.io'
+      docker-image-folder: tools
+      docker-image-tag: 'latest'
+      push-image: true
+      vault-jwt-role-name: ${{ github.event.repository.name }}
+      vault-namespace: 'adeo/scdp-ops'
+      vault-secrets: |
+            secret/data/test-emm aiven_token  | AIVEN_TOKEN_CI;
+            secret/data/test-emm infrastructure_metrics_collector_sa | GOOGLE_APPLICATION_CREDENTIALS ;
+            secret/data/test-emm atlas_public_key | ATLAS_PUBLIC_KEY ; 
+            secret/data/test-emm atlas_private_key | ATLAS_PRIVATE_KEY ;
+            secret/data/jfrog JFROG_USER_LOGIN_WRITER | DOCKER_WRITER_USER_NAME ;
+            secret/data/jfrog JFROG_USER_PASSWORD_WRITER | DOCKER_WRITER_USER_TOKEN ;
+      docker-build-args: |
+        GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+        AIVEN_TOKEN_CI=$AIVEN_TOKEN_CI
+        ATLAS_PRIVATE_KEY=$ATLAS_PRIVATE_KEY
+        ATLAS_PUBLIC_KEY=$ATLAS_PUBLIC_KEY
